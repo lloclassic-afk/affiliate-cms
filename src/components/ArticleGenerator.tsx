@@ -130,7 +130,11 @@ export function ArticleGenerator({ products }: { products: Product[] }) {
               onChange={(e) => setBody(e.target.value)}
             />
           </Field>
-          {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
+          {error ? (
+            <p className="mb-4 whitespace-pre-wrap text-sm text-red-600">
+              {error}
+            </p>
+          ) : null}
           <Button type="button" onClick={handleSaveDraft} disabled={pending}>
             {pending ? "保存中..." : "下書きとして保存して編集画面へ"}
           </Button>
@@ -138,7 +142,7 @@ export function ArticleGenerator({ products }: { products: Product[] }) {
       ) : null}
 
       {error && !generated ? (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="whitespace-pre-wrap text-sm text-red-600">{error}</p>
       ) : null}
     </div>
   );

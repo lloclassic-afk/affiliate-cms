@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
 import { ProductCard } from "@/components/ProductCard";
 import { AFFILIATE_DISCLOSURE } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { markdownToHtml } from "@/lib/markdown";
 import { getPublishedArticleBySlug } from "@/lib/queries";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -37,10 +39,21 @@ export default async function PublicArticlePage({
     <div className="min-h-screen bg-[#f5f0e8]">
       <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto max-w-3xl px-4 py-6">
-          <p className="text-xs text-stone-500">更新日: {formatDate(article.updated_at)}</p>
+          <p className="text-xs text-stone-500">
+            <Link href="/articles" className="hover:underline">
+              記事一覧
+            </Link>
+            <span className="mx-2">/</span>
+            更新日: {formatDate(article.updated_at)}
+          </p>
           <h1 className="mt-2 text-2xl font-bold text-stone-900 sm:text-3xl">
             {article.title}
           </h1>
+          {article.meta_description ? (
+            <p className="mt-3 text-sm leading-relaxed text-stone-600">
+              {article.meta_description}
+            </p>
+          ) : null}
         </div>
       </header>
 
@@ -69,9 +82,13 @@ export default async function PublicArticlePage({
       </main>
 
       <footer className="border-t border-stone-200 bg-white py-6 text-center text-xs text-stone-500">
-        <a href="/" className="hover:underline">
+        <Link href="/articles" className="hover:underline">
+          記事一覧へ
+        </Link>
+        <span className="mx-2">·</span>
+        <Link href="/" className="hover:underline">
           トップへ
-        </a>
+        </Link>
       </footer>
     </div>
   );

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { ButtonLink } from "@/components/ui/Button";
 
 export default function HomePage() {
@@ -10,8 +12,16 @@ export default function HomePage() {
         商品を登録し、比較記事の下書きを作成。内容を確認してから公開できます。
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <ButtonLink href="/articles" variant="secondary">
+          公開記事一覧
+        </ButtonLink>
         <ButtonLink href="/admin">管理画面へ</ButtonLink>
       </div>
+      <p className="mt-6 text-sm text-stone-600">
+        <Link href="/articles" className="underline decoration-stone-300 hover:decoration-stone-600">
+          公開済み記事を読む
+        </Link>
+      </p>
     </main>
   );
 }

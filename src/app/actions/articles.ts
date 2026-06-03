@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AFFILIATE_DISCLOSURE } from "@/lib/constants";
 import { slugify } from "@/lib/slug";
+import { formatSupabaseError } from "@/lib/supabase/errors";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { ArticleFormData, ArticleStatus } from "@/types/database";
 
@@ -28,7 +29,7 @@ async function syncArticleProducts(
   }));
 
   const { error } = await supabase.from("article_products").insert(rows);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(formatSupabaseError(error));
 }
 
 export async function createArticle(data: ArticleFormData) {
@@ -47,7 +48,7 @@ export async function createArticle(data: ArticleFormData) {
     .select("id")
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(formatSupabaseError(error));
   await syncArticleProducts(row.id, data.product_ids);
 
   revalidatePath("/admin/articles");
@@ -68,10 +69,11 @@ export async function updateArticle(id: string, data: ArticleFormData) {
     })
     .eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(formatSupabaseError(error));
   await syncArticleProducts(id, data.product_ids);
 
   revalidatePath("/admin/articles");
+  revalidatePath("/articles");
   revalidatePath(`/admin/articles/${id}/edit`);
   revalidatePath(`/articles/${data.slug.trim()}`);
 }
@@ -80,7 +82,7 @@ export async function deleteArticle(id: string) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("articles").delete().eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(formatSupabaseError(error));
   revalidatePath("/admin/articles");
 }
 
@@ -106,7 +108,7 @@ export async function createDraftFromGeneration(input: {
     .select("id")
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(formatSupabaseError(error));
   await syncArticleProducts(row.id, input.product_ids);
 
   revalidatePath("/admin/articles");

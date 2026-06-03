@@ -1,5 +1,8 @@
--- アフィリエイト記事管理システム MVP
+-- アフィリエイト記事管理システム MVP（全テーブル一括）
 -- Supabase SQL Editor で実行してください
+--
+-- products のみ作成済みで articles が無い場合:
+--   supabase/migrations/002_articles.sql を実行してください
 
 create extension if not exists "pgcrypto";
 
@@ -56,6 +59,15 @@ create trigger articles_updated_at
   before update on articles
   for each row execute function update_updated_at_column();
 
+-- API ロールへの権限
+grant usage on schema public to anon, authenticated, service_role;
+grant select, insert, update, delete on products to service_role;
+grant select, insert, update, delete on articles to service_role;
+grant select, insert, update, delete on article_products to service_role;
+grant select on products to anon, authenticated;
+grant select on articles to anon, authenticated;
+grant select on article_products to anon, authenticated;
+
 -- RLS
 alter table products enable row level security;
 alter table articles enable row level security;
@@ -82,3 +94,5 @@ create policy "article_products_public_read" on article_products
 -- create policy "products_admin_all" on products for all using (true) with check (true);
 -- create policy "articles_admin_all" on articles for all using (true) with check (true);
 -- create policy "article_products_admin_all" on article_products for all using (true) with check (true);
+
+notify pgrst, 'reload schema';

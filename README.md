@@ -19,7 +19,9 @@ Next.js + TypeScript + Supabase + Tailwind CSS で、商品登録とアフィリ
 ### 1. Supabase プロジェクト作成
 
 1. [Supabase](https://supabase.com) でプロジェクトを作成
-2. SQL Editor で `supabase/schema.sql` を実行
+2. SQL Editor で DB をセットアップ
+   - 新規: `supabase/schema.sql` を丸ごと実行
+   - **products のみ作成済み:** `supabase/migrations/002_articles.sql` を実行（`articles` / `article_products`）
 3. Settings → API から URL / anon key / service_role key を取得
 
 ### 2. 環境変数

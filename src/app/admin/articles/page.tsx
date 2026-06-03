@@ -46,11 +46,34 @@ export default async function ArticlesPage() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-stone-900">{a.title}</p>
+                    {a.status === "published" ? (
+                      <Link
+                        href={`/articles/${a.slug}`}
+                        className="font-medium text-stone-900 hover:underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {a.title}
+                      </Link>
+                    ) : (
+                      <p className="font-medium text-stone-900">{a.title}</p>
+                    )}
                     <StatusBadge status={a.status} />
                   </div>
                   <p className="mt-1 text-sm text-stone-500">
-                    /articles/{a.slug} · 更新 {formatDate(a.updated_at)}
+                    {a.status === "published" ? (
+                      <Link
+                        href={`/articles/${a.slug}`}
+                        className="hover:underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        /articles/{a.slug}
+                      </Link>
+                    ) : (
+                      <span>/articles/{a.slug}</span>
+                    )}
+                    <span> · 更新 {formatDate(a.updated_at)}</span>
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
