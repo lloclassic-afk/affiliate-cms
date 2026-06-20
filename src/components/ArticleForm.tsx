@@ -3,16 +3,16 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Textarea } from "@/components/ui/Input";
-import { AFFILIATE_DISCLOSURE } from "@/lib/constants";
+import { formatPrice } from "@/lib/format";
 import { slugify } from "@/lib/slug";
 import type { ArticleFormData, ArticleWithProducts, Product } from "@/types/database";
 
-function toForm(article?: ArticleWithProducts, products: Product[] = []): ArticleFormData {
+function toForm(article?: ArticleWithProducts): ArticleFormData {
   if (!article) {
     return {
       title: "",
       slug: "",
-      body: `${AFFILIATE_DISCLOSURE}\n\n`,
+      body: "",
       meta_description: "",
       status: "draft",
       product_ids: [],
@@ -38,7 +38,7 @@ export function ArticleForm({
   action: (data: ArticleFormData) => Promise<void>;
 }) {
   const [form, setForm] = useState<ArticleFormData>(() =>
-    toForm(article, allProducts),
+    toForm(article),
   );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export function ArticleForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl">
+    <form onSubmit={handleSubmit} className="admin-form w-full max-w-[1100px]">
       <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
         公開前に必ず内容を確認してください。下書きのままでは一般公開されません。
       </div>
@@ -101,7 +101,20 @@ export function ArticleForm({
       </Field>
       <Field label="メタディスクリプション">
         <Textarea
-          className="min-h-[80px]"
+          name="meta_description"
+          rows={6}
+          className="article-meta-textarea min-h-[160px] w-full"
+          style={{
+            width: "100%",
+            minHeight: "160px",
+            height: "160px",
+            maxWidth: "none",
+            boxSizing: "border-box",
+            fontSize: "16px",
+            lineHeight: 1.7,
+            padding: "16px",
+            resize: "vertical",
+          }}
           value={form.meta_description}
           onChange={(e) => update("meta_description", e.target.value)}
         />
@@ -122,33 +135,53 @@ export function ArticleForm({
         {allProducts.length === 0 ? (
           <p className="text-sm text-stone-500">先に商品を登録してください。</p>
         ) : (
-          <ul className="space-y-2 rounded-lg border border-stone-200 bg-stone-50 p-3">
+          <ul className="product-options w-full space-y-3 rounded-lg border border-stone-200 bg-white p-3 sm:p-4">
             {allProducts.map((p) => (
-              <li key={p.id} className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id={`product-${p.id}`}
-                  checked={form.product_ids.includes(p.id)}
-                  onChange={() => toggleProduct(p.id)}
-                  className="mt-1"
-                />
-                <label htmlFor={`product-${p.id}`} className="text-sm">
-                  {p.name}
-                  {p.category ? (
-                    <span className="text-stone-500">（{p.category}）</span>
-                  ) : null}
+              <li key={p.id}>
+                <label
+                  htmlFor={`product-${p.id}`}
+                  className="product-option"
+                >
+                  <input
+                    type="checkbox"
+                    id={`product-${p.id}`}
+                    checked={form.product_ids.includes(p.id)}
+                    onChange={() => toggleProduct(p.id)}
+                  />
+                  <div className="product-option-body">
+                    <div className="product-option-title">{p.name}</div>
+                    <div className="product-option-price">
+                      {p.category ? `${p.category} / ` : ""}
+                      {formatPrice(p.price)}
+                    </div>
+                    {p.recommended_reason ? (
+                      <div className="product-option-description">
+                        {p.recommended_reason}
+                      </div>
+                    ) : null}
+                  </div>
                 </label>
               </li>
             ))}
           </ul>
         )}
       </Field>
-      <Field
-        label="本文 *"
-        hint={`冒頭に「${AFFILIATE_DISCLOSURE}」が含まれている必要があります（保存時に自動付与）`}
-      >
+      <Field label="本文 *">
         <Textarea
-          className="min-h-[400px] font-mono text-sm"
+          name="body"
+          rows={30}
+          className="article-body-textarea min-h-[800px] w-full resize-y p-4 text-base leading-[1.7]"
+          style={{
+            width: "100%",
+            minHeight: "800px",
+            height: "800px",
+            maxWidth: "none",
+            boxSizing: "border-box",
+            fontSize: "16px",
+            lineHeight: 1.7,
+            padding: "16px",
+            resize: "vertical",
+          }}
           required
           value={form.body}
           onChange={(e) => update("body", e.target.value)}
