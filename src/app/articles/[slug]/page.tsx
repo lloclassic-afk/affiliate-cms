@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { AFFILIATE_DISCLOSURE } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
-import { markdownToHtml } from "@/lib/markdown";
 import {
   getArticleCategory,
   getArticleExcerpt,
@@ -59,7 +58,6 @@ export default async function PublicArticlePage({
   const article = await getPublishedArticleBySlug(slug);
   if (!article) notFound();
 
-  const html = markdownToHtml(article.body);
   const category = getArticleCategory(article);
 
   return (
@@ -92,14 +90,36 @@ export default async function PublicArticlePage({
           {AFFILIATE_DISCLOSURE}
         </aside>
 
-        <article
-  className="article-content prose-article mx-auto"
-  style={{
-    whiteSpace: "pre-wrap",
-    lineHeight: 1.9,
-  }}
-  dangerouslySetInnerHTML={{ __html: html }}
-/>
+        <article className="article-content prose-article mx-auto space-y-8 leading-loose">
+  {article.body
+    .replace(/\r\n/g, "\n")
+    .trim()
+    .split(/\n{2,}/)
+    .map((block, index) => {
+      const markdownLink = block.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+
+      if (markdownLink) {
+        return (
+          <p key={index}>
+            <a
+              href={markdownLink[2]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline"
+            >
+              {markdownLink[1]}
+            </a>
+          </p>
+        );
+      }
+
+      return (
+        <p key={index} className="leading-loose">
+          {block}
+        </p>
+      );
+    })}
+</article>
 
         {article.products.length > 0 ? (
           <section className="mt-12">
