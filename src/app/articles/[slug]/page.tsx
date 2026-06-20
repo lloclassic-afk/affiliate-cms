@@ -6,6 +6,12 @@ import { ProductCard } from "@/components/ProductCard";
 import { AFFILIATE_DISCLOSURE } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { markdownToHtml } from "@/lib/markdown";
+import {
+  getArticleCategory,
+  getArticleExcerpt,
+  SITE_NAME,
+  SITE_URL,
+} from "@/lib/media";
 import { getPublishedArticleBySlug } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +24,29 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = await getPublishedArticleBySlug(slug);
   if (!article) return { title: "記事が見つかりません" };
+  const description = getArticleExcerpt(article);
+  const url = `${SITE_URL}/articles/${article.slug}`;
   return {
     title: article.title,
-    description: article.meta_description ?? undefined,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: `${article.title} | ${SITE_NAME}`,
+      description,
+      url,
+      siteName: SITE_NAME,
+      locale: "ja_JP",
+      type: "article",
+      publishedTime: article.created_at,
+      modifiedTime: article.updated_at,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${article.title} | ${SITE_NAME}`,
+      description,
+    },
   };
 }
 
@@ -34,6 +60,7 @@ export default async function PublicArticlePage({
   if (!article) notFound();
 
   const html = markdownToHtml(article.body);
+  const category = getArticleCategory(article);
 
   return (
     <div className="min-h-screen bg-[#f5f0e8]">
@@ -46,6 +73,9 @@ export default async function PublicArticlePage({
             <span className="mx-2">/</span>
             更新日: {formatDate(article.updated_at)}
           </p>
+          <p className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-100">
+            {category}
+          </p>
           <h1 className="mt-2 text-2xl font-bold text-stone-900 sm:text-3xl">
             {article.title}
           </h1>
@@ -57,22 +87,29 @@ export default async function PublicArticlePage({
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <aside className="mb-8 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+      <main className="mx-auto max-w-5xl px-4 py-8">
+        <aside className="mx-auto mb-8 max-w-3xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           {AFFILIATE_DISCLOSURE}
         </aside>
 
         <article
-          className="prose-article rounded-xl border border-stone-200 bg-white p-6 text-stone-800"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+  className="article-content prose-article mx-auto"
+  style={{
+    whiteSpace: "pre-wrap",
+    lineHeight: 1.9,
+  }}
+  dangerouslySetInnerHTML={{ __html: html }}
+/>
 
         {article.products.length > 0 ? (
           <section className="mt-12">
-            <h2 className="mb-4 text-xl font-semibold text-stone-900">
-              紹介商品
+            <h2 className="text-xl font-semibold text-stone-900">
+              紹介しているAIツール
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <p className="mt-2 text-sm leading-7 text-stone-600">
+              この記事内で紹介している商品・サービスへのリンクです。
+            </p>
+            <div className="mt-5 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
               {article.products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
